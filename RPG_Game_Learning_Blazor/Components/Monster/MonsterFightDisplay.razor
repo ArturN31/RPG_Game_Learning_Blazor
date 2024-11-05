@@ -1,0 +1,55 @@
+﻿<div class="d-grid d-xxl-flex bg-dark p-3 text-white gap-3 rounded-3"
+     style="box-shadow: 0px 2px 6px -2px black; width: fit-content">
+
+    <img class="img-fluid rounded-3 d-none d-xxl-grid m-auto img-thumbnail"
+            style="max-height: 200px"
+            src="/images/locations/@Monster.ImageName">
+
+    <div class="d-flex flex-column gap-3 m-auto">
+        <div class="mx-auto"style="width: 300px">
+            <RPG_Game_Learning_Blazor.Components.Monster.MonsterStatusBars 
+            Name="@Monster.Name"
+            Level="@Monster.Level"
+            CurrentHealth="@Monster.CurrentHealth"
+            MaxHealth="@Monster.MaxHealth" />
+        </div>
+
+        <ul class="list-unstyled p-3 rounded-3 text-center d-grid gap-3">
+            <li class="d-flex gap-3 justify-content-center">
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Monster/Damage.svg" style="width: 40px;" />
+                    <span class="fs-4">&nbsp;1 - @Monster.Damage</span>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Hit_Chance.svg" style="width: 40px" />
+                    <span class="fs-4">&nbsp;@(Monster.AttackChance)%</span>
+                </div>
+            </li>
+
+            <li class="d-flex gap-3 justify-content-center">
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Block.svg" style="width: 40px;" />
+                    <span class="fs-4">&nbsp;@(Monster.BlockChance)%</span>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Critical_Hit.svg" style="width: 40px" />
+                    <span class="fs-4">&nbsp;@(Monster.CritChance)%</span>
+                </div>
+            </li>
+
+            <li class="d-flex gap-3 justify-content-center">
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Monster/Award_Chest.svg" class="mx-auto" style="width: 40px;" />
+                    <span class="fs-4">&nbsp;@Monster.ExperienceGivenToPlayer XP</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Monster Monster { get; set; }
+}

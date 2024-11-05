@@ -1,0 +1,344 @@
+﻿@page "/"
+@inject Services.LocationService LocationService
+@inject Services.CharacterService CharacterService
+
+<PageTitle>Home</PageTitle>
+
+<div class="text-center vh-100 d-flex flex-column justify-content-center gap-3">
+    @if (!CharacterService.CharacterExists())
+    {
+        <h1>Hello, traveller!</h1>
+        <h3>Create a <a href="character">character</a> to play the game.</h3>
+    }
+    else
+    {
+        <h1>Hello, @CharacterService.Character.Name!</h1>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (LocationService.Locations.Count == 0)
+        {
+            GenerateMonsters();
+            StateHasChanged();
+        }
+    }
+
+    private void AddLocation(string name, string description, bool respawningMonsters, int defaultLocationRespawnTimer, int currentLocationRespawntimer, List<Monster> defaultMonsters, List<Monster> currentMonsters, string imageName)
+    {
+        Location newLocation = new(name, description, respawningMonsters, defaultLocationRespawnTimer, currentLocationRespawntimer, defaultMonsters, currentMonsters, imageName);
+        LocationService.AddLocation(newLocation);
+    }
+
+    private void GenerateMonsters()
+    {
+        //Whispering Woods
+        List<Monster> WhisperingWoodsMonsters = [
+            new Monster(name: "Wolf", 
+            description: "A solitary wolf with glowing yellow eyes lurks deep within the forest. Its fur is a blend of gray and brown, blending seamlessly with its surroundings. Its keen senses allow it to detect even the slightest movement, making it a formidable hunter.", 
+            level: 2,
+            maxHealth: 75, 
+            currentHealth: 75, 
+            damage: 7,
+            attackChance: 85,
+            blockChance: 0,
+            critChance: 20,
+            experience: 50, 
+            imageName: "Whispering_Woods/Wolf.jpg"),
+
+            new Monster(name: "Goblin", 
+            description: "A small, green-skinned humanoid with large ears and a mischievous grin, native to the Whispering Woods. These goblins have adapted to the forest environment, becoming more stealthy and resourceful than their counterparts. They are known for their ability to blend seamlessly with the woodland surroundings.", 
+            level: 1,
+            maxHealth: 45, 
+            currentHealth: 45, 
+            damage: 5, 
+            attackChance: 85,
+            blockChance: 10,
+            critChance: 5,
+            experience: 35, 
+            imageName: "Whispering_Woods/Goblin.jpg"),
+
+            new Monster(name: "Giant Spider", 
+            description: "A massive spider with a dark carapace and glowing red eyes. This creature is the guardian of the ancient forest, protecting its domain with fierce loyalty. Its long, spindly legs allow it to move swiftly and silently through the undergrowth, while its venomous fangs can deliver a deadly bite.", 
+            level: 3,
+            maxHealth: 60, 
+            currentHealth: 60, 
+            damage: 8, 
+            attackChance: 95,
+            blockChance: 25,
+            critChance: 10,
+            experience: 75, 
+            imageName: "Whispering_Woods/Giant_Spider.jpg"),
+        ];
+
+        AddLocation(
+            name: "Whispering Woods",
+            description: "Whispering Woods is a dense, ancient forest that stretches for miles. The towering trees form a canopy that blocks out the sun, casting the forest floor in perpetual twilight. The air is filled with the eerie sounds of rustling leaves and the distant hoots of owls. Despite its beauty, the woods are said to be haunted by a sinister presence.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 30000,
+            currentLocationRespawntimer: 30000,
+            defaultMonsters: new List<Monster>(WhisperingWoodsMonsters),
+            currentMonsters: new List<Monster>(WhisperingWoodsMonsters),
+            imageName: "Whispering_Woods/Whispering_Woods.jpg");
+
+        //Forgotten Ruins
+        List<Monster> ForgottenRuinsMonsters = [
+            new Monster(name: "Skeleton", 
+            description: "A skeletal figure, its bones creaking with every movement, lurks in the shadows of the forgotten ruins. Its eyes, two empty sockets filled with an eerie blue glow, search for its next victim. A tattered cloak hangs loosely from its skeletal frame, its once-splendid colors faded with time.", 
+            level: 2,
+            maxHealth: 80, 
+            currentHealth: 80, 
+            damage: 9, 
+            attackChance: 75,
+            blockChance: 20,
+            critChance: 7,
+            experience: 55, 
+            imageName: "Forgotten_Ruins/Skeleton.jpg"),
+
+            new Monster(name: "Mummy", 
+            description: "A skeletal figure, wrapped in ancient, sun-bleached bandages, rises from the crumbling ruins. Its hollow eye sockets burn with an unnatural glow, and a sickly sweet scent fills the air. A chilling groan escapes its desiccated lips as it lurches forward, its bones creaking with each movement.", 
+            level: 3,
+            maxHealth: 100, 
+            currentHealth: 100, 
+            damage: 12, 
+            attackChance: 60,
+            blockChance: 35,
+            critChance: 5,
+            experience: 70, 
+            imageName: "Forgotten_Ruins/Mummy.jpg"),
+
+            new Monster(name: "Undead Warrior", 
+            description: "An undead warrior, its bones brittle and its eyes glowing with an eerie blue light. It wears tattered remnants of once-splendid armor, its weapon a rusted greatsword. It wanders the forgotten ruins, driven by an unending hunger for the living.", 
+            level: 4,
+            maxHealth: 120, 
+            currentHealth: 120, 
+            damage: 12, 
+            attackChance: 90,
+            blockChance: 30,
+            critChance: 12,
+            experience: 85, 
+            imageName: "Forgotten_Ruins/Undead_Warrior.jpg"),
+        ];
+
+        AddLocation(
+            name: "Forgotten Ruins",
+            description: "The Forgotten Ruins are the remnants of an ancient civilization that has long since vanished. The once-grand structures are now crumbling and overgrown with vines, their stones weathered by time and decay. A sinister aura hangs over the ruins, and the air is filled with the scent of decay.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 45000,
+            currentLocationRespawntimer: 45000,
+            defaultMonsters: new List<Monster>(ForgottenRuinsMonsters),
+            currentMonsters: new List<Monster>(ForgottenRuinsMonsters),
+            imageName: "Forgotten_Ruins/Forgotten_Ruins.jpg");
+
+        //Shadowed Caverns
+        List<Monster> ShadowedCavernsMonsters = [
+            new Monster(name: "Troll", 
+            description: "A hulking, green-skinned beast with glowing eyes and clawed hands emerges from the darkness, its guttural growl a chilling warning. Its thick, leathery skin is a mottled blend of dark green and brown, blending seamlessly with the shadowy walls.", 
+            level: 5,
+            maxHealth: 180, 
+            currentHealth: 180, 
+            damage: 15, 
+            attackChance: 70,
+            blockChance: 25,
+            critChance: 15,
+            experience: 100, 
+            imageName: "Shadowed_Caverns/Troll.jpg"),
+
+            new Monster(name: "Orc", 
+            description: "A burly, green-skinned warrior emerges from the darkness, its eyes glinting with a savage intensity. It is clad in crude, metal armor that is dented and scarred from countless battles. A gnarled club is clutched tightly in its powerful hands, and a menacing snarl escapes its lips.", 
+            level: 4,
+            maxHealth: 150, 
+            currentHealth: 150,
+            damage: 13, 
+            attackChance: 80,
+            blockChance: 20,
+            critChance: 12,
+            experience: 85, 
+            imageName: "Shadowed_Caverns/Orc.jpg"),
+
+            new Monster(name: "Giant Bat", 
+            description: "A monstrous creature, its leathery wings outstretched, soars through the cavern's darkness. Its razor-sharp teeth gleam in the dim light, and its beady eyes search for prey. A chilling screech pierces the silence as it swoops down, its claws extended, ready to strike.", 
+            level: 4,
+            maxHealth: 120, 
+            currentHealth: 120, 
+            damage: 10, 
+            attackChance: 80,
+            blockChance: 0,
+            critChance: 20,
+            experience: 75, 
+            imageName: "Shadowed_Caverns/Giant_Bat.jpg"),
+        ];
+
+        AddLocation(
+            name: "Shadowed Caverns",
+            description: "The Shadowed Caverns are a vast underground labyrinth, filled with winding tunnels and cavernous chambers. The air is thick with humidity, and the only light comes from the occasional bioluminescent fungus. The silence is broken only by the dripping of water and the distant echoes of unseen creatures.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 60000,
+            currentLocationRespawntimer: 60000,
+            defaultMonsters: new List<Monster>(ShadowedCavernsMonsters),
+            currentMonsters: new List<Monster>(ShadowedCavernsMonsters),
+            imageName: "Shadowed_Caverns/Shadowed_Caverns.jpg");
+
+        //Dragons Peak
+        List<Monster> DragonsPeakMonsters = [
+            new Monster(name: "Fire Drake", 
+            description: "A fearsome reptilian creature with scales that shimmer like molten gold. Its wings are leathery and black, and its eyes glow with an intense, fiery heat. The fire drake is a creature of pure elemental power, capable of unleashing devastating blasts of flame. It makes its home atop Dragon's Peak, where it guards its hoard of precious gems and metals.",
+            level: 6,
+            maxHealth: 230, 
+            currentHealth: 230, 
+            damage: 20, 
+            attackChance: 95,
+            blockChance: 10,
+            critChance: 20,
+            experience: 125, 
+            imageName: "Dragons_Peak/Fire_Drake.jpg"),
+
+            new Monster(name: "Mountain Giant", 
+            description: "A massive, hulking creature with skin as tough as stone. Its eyes are small and beady, and its mouth is a gaping maw filled with jagged teeth. The mountain giant is a powerful and fearsome opponent, capable of crushing its enemies with a single blow. It makes its home in the rugged mountains of Dragon's Peak, where it guards its territory with fierce determination.",
+            level: 8,
+            maxHealth: 250, 
+            currentHealth: 250, 
+            damage: 25, 
+            attackChance: 60,
+            blockChance: 25,
+            critChance: 5,
+            experience: 150, 
+            imageName: "Dragons_Peak/Mountain_Giant.jpg"),
+
+            new Monster(name: "Griffin", 
+            description: "A guardian of the mountains, the griffin is a majestic creature with the strength of a lion and the speed of an eagle. Its feathers are a dazzling array of gold, white, and black, and its eyes are piercing and intelligent. It is known to protect its territory fiercely, and is a fearsome opponent to any who dare to challenge it.",
+            level: 7,
+            maxHealth: 200, 
+            currentHealth: 200, 
+            damage: 18, 
+            attackChance: 80,
+            blockChance: 0,
+            critChance: 20,
+            experience: 130, 
+            imageName: "Dragons_Peak/Griffin.jpg"),
+        ];
+
+        AddLocation(
+            name: "Dragon's Peak",
+            description: "Dragon's Peak is a towering, volcanic mountain range that dominates the eastern horizon. Its slopes are scarred by ancient lava flows and littered with jagged, obsidian rocks. The summit is a smoldering crater, where a fiery dragon is said to make its home. The air is thick with the acrid scent of sulfur, and the ground trembles with the mountain's subterranean rumblings.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 75000,
+            currentLocationRespawntimer: 75000,
+            defaultMonsters: new List<Monster>(DragonsPeakMonsters),
+            currentMonsters: new List<Monster>(DragonsPeakMonsters),
+            imageName: "Dragons_Peak/Dragons_Peak.jpg");
+
+        //Infernal Cavern
+        List<Monster> InfernalCavernMonsters = [
+            new Monster(name: "Fire Demon", 
+            description: "A creature of elemental fury, the fire demon is a terrifying manifestation of the Infernal Cavern's power. Its body is a swirling mass of flames, its eyes glowing with an intense, infernal heat. It is a force of nature unleashed, a living embodiment of destruction.",
+            level: 10,
+            maxHealth:400, 
+            currentHealth: 400, 
+            damage: 35, 
+            attackChance: 85,
+            blockChance: 20,
+            critChance: 20,
+            experience: 250, 
+            imageName: "Infernal_Cavern/Fire_Demon.jpg"),
+
+            new Monster(name: "Lava Golem", 
+            description: "A creature of pure volcanic power, the lava golem is a powerful and dangerous opponent. Its body is a swirling mass of magma, its eyes glowing with an intense, fiery heat.",
+            level: 9,
+            maxHealth: 500,
+            currentHealth: 500, 
+            damage: 15, 
+            attackChance: 60,
+            blockChance: 45,
+            critChance: 5,
+            experience: 200, 
+            imageName: "Infernal_Cavern/Lava_Golem.jpg"),
+
+            new Monster(name: "Hell Hound", 
+            description: "A demonic hound from the depths of the Infernal Cavern, the hell hound is a terrifying predator. Its body is covered in flames, its eyes burning with an intense, infernal heat.",
+            level: 6,
+            maxHealth: 150,
+            currentHealth: 150, 
+            damage: 30, 
+            attackChance: 80,
+            blockChance: 10,
+            critChance: 30,
+            experience: 100, 
+            imageName: "Infernal_Cavern/Hell_Hound.jpg"),
+        ];
+
+        AddLocation(
+            name: "Infernal Cavern",
+            description: "The Infernal Cavern is a subterranean realm of eternal fire and volcanic fury. The air is thick with the acrid scent of sulfur, and the ground trembles with the constant rumblings of the earth. The cavern walls are lined with molten lava, and the ceiling is a fiery dome that seems to touch the sky.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 120000,
+            currentLocationRespawntimer: 120000,
+            defaultMonsters: new List<Monster>(InfernalCavernMonsters),
+            currentMonsters: new List<Monster>(InfernalCavernMonsters),
+            imageName: "Infernal_Cavern/Infernal_Cavern.jpg");
+
+
+        //Frozen Wasteland
+        List<Monster> FrozenWastelandMonsters = [
+            new Monster(name: "Ice Titan", 
+            description: "A towering behemoth of ice, the ice titan is a terrifying embodiment of the Frozen Wasteland's power. Its body is a frozen fortress, its eyes glowing with a cold, inhuman intensity.",
+            level: 15,
+            maxHealth: 500, 
+            currentHealth: 500, 
+            damage: 35, 
+            attackChance: 80,
+            blockChance: 20,
+            critChance: 15,
+            experience: 300, 
+            imageName: "Frozen_Wasteland/Ice_Titan.jpg"),
+
+            new Monster(name: "Frost Wyrm Alpha", 
+            description: "A frozen terror, its scales shimmering blue in the frigid light. Its breath is a torrent of freezing cold, capable of encasing its enemies in solid ice. Its eyes, cold and calculating, pierce through the blizzard's fury.",
+            level: 11,
+            maxHealth: 300, 
+            currentHealth: 300, 
+            damage: 25, 
+            attackChance: 80,
+            blockChance: 25,
+            critChance: 10,
+            experience: 150, 
+            imageName: "Frozen_Wasteland/Frost_Wyrm_Alpha.jpg"),
+
+            new Monster(name: "Blizzard Storm Elemental", 
+            description: "A swirling vortex of ice and snow, its form constantly shifting and changing. Its breath is a chilling gale, capable of freezing anything in its path. Its eyes, cold and calculating, pierce through the blizzard's fury.",
+            level: 8,
+            maxHealth: 200, 
+            currentHealth: 200, 
+            damage: 20, 
+            attackChance: 80,
+            blockChance: 20,
+            critChance: 15,
+            experience: 100, 
+            imageName: "Frozen_Wasteland/Blizzard_Storm_Elemental.jpg"),
+
+            new Monster(name: "Frost Dragon", 
+            description: "A colossal, crystalline dragon, its scales shimmering in the icy light, guards the heart of the frozen wastelands. Its breath, a chilling mist, can freeze a man in his tracks. Its eyes, two piercing sapphires, hold the secrets of the eternal winter.",
+            level: 17,
+            maxHealth: 600, 
+            currentHealth: 600, 
+            damage: 50, 
+            attackChance: 80,
+            blockChance: 20,
+            critChance: 20,
+            experience: 400, 
+            imageName: "Frozen_Wasteland/Frost_Dragon.jpg"),
+        ];
+
+        AddLocation(
+            name: "Frozen Wasteland",
+            description: "The Frozen Wasteland is a desolate, icy expanse where the wind howls like a banshee and the snow never melts. The landscape is a barren, frozen tundra, dotted with towering icebergs and jagged glaciers. The air is so cold that it stings the skin, and the ground is hard as stone.",
+            respawningMonsters: false,
+            defaultLocationRespawnTimer: 150000,
+            currentLocationRespawntimer: 150000,
+            defaultMonsters: new List<Monster>(FrozenWastelandMonsters),
+            currentMonsters: new List<Monster>(FrozenWastelandMonsters),
+            imageName: "Frozen_Wasteland/Frozen_Wasteland.jpg");
+    }
+}

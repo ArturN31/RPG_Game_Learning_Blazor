@@ -1,0 +1,46 @@
+﻿<div class="d-grid d-xxl-flex gap-3 m-auto">
+    <div id="location-image-container" class="d-grid gap-3 p-3 thumbnail bg-dark text-white rounded-3 m-auto" style="width:fit-content">
+        <img class="img-fluid img-thumbnail" src="/images/locations/@Monster.ImageName">
+
+        <h3 class="text-center m-auto">
+            <strong>@Monster.Name</strong>
+        </h3>
+    </div>
+
+    <div class="d-flex flex-column gap-3 mx-auto">
+        <div class="container">
+            <div class="row">
+                <p class="text-center bg-dark rounded-3 m-auto text-white p-3">@Monster.Description</p>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <ul class="list-unstyled p-3 rounded-3 text-center bg-dark text-white" style="width: fit-content">
+                <li class="d-grid">
+                    <span class="lead fs-3" style="font-weight: 600">@Monster.Name</span>
+                    <span><strong>LVL:</strong> @Monster.Level</span>
+                </li>
+                <li class="d-flex gap-3">
+                    <div class="d-flex justify-content-center gap-2">
+                        <img src="images/icons/Monster/Health.svg" style="width: 40px;" />
+                        <span class="fs-4">&nbsp;@Monster.CurrentHealth</span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2">
+                        <img src="images/icons/Monster/Damage.svg" style="width: 40px;" />
+                        <span class="fs-4">&nbsp;1 - @Monster.Damage</span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2">
+                        <img src="images/icons/Monster/Award_Chest.svg" class="mx-auto" style="width: 40px;" />
+                        <span class="fs-4">&nbsp;@Monster.ExperienceGivenToPlayer XP</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public Monster Monster { get; set; }
+}

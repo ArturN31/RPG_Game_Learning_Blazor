@@ -1,0 +1,47 @@
+﻿@page "/location/{Name}"
+
+@inject Services.LocationService LocationService
+@inject Services.CharacterService CharacterService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@Name</PageTitle>
+
+@if (CharacterService.Character.Name != "")
+{
+    <div class="d-grid gap-3 p-3">
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a type="button" class="btn btn-secondary" style="width: fit-content" href="locations">Go Back</a>
+            @if (Location != null && Location.CurrentMonsters.Count > 0)
+            {
+                <a type="button" class="btn btn-danger" style="width: fit-content" href="encounter/@Location.Name/@Monster?.Name">Tread On</a>
+            }
+        </div>
+            
+        <RPG_Game_Learning_Blazor.Components.Location.DisplayLocationDetails Location="@Location"/>
+    </div>
+}
+else
+{
+    <p>Create a Character.</p>
+}
+
+@code {
+    [Parameter]
+    public string? Name { get; set; }
+
+    public Location? Location { get; set; }
+    private Monster? Monster { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Name != null) { Location = LocationService.GetLocationByName(Name); }
+        if (Location != null && Location.CurrentMonsters.Count > 0) { Monster = GetRandomMonster(Location); }
+    }
+
+    Monster GetRandomMonster(Location Location)
+    {
+        List<Monster> Monsters = Location.CurrentMonsters;
+        Random Random = new();
+        return Monsters[Random.Next(0, Monsters.Count)];
+    }
+}

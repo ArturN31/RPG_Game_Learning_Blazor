@@ -1,0 +1,60 @@
+﻿<div class="d-grid d-xxl-flex gap-3 m-auto">
+    <div id="location-image-container" 
+        class="d-grid gap-3 p-3 thumbnail bg-dark text-white rounded-3 m-auto">
+        <img class="img-fluid img-thumbnail" 
+            src="/images/locations/@Location.ImageName">
+
+        <h3 class="text-center m-auto">
+            <strong>@Location.Name</strong>
+        </h3>
+    </div>
+
+    <div class="d-flex flex-column gap-3 mx-auto">
+        <div class="container">
+            <div class="row">
+                <p class="text-center bg-dark rounded-3 m-auto text-white p-3">
+                    @Location.Description </p>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            @if (Location.CurrentMonsters.Count >= 1)
+            {
+                @foreach (Monster monster in Location.CurrentMonsters)
+                {
+                    <ul class="list-unstyled p-3 rounded-3 text-center bg-dark text-white" style="width: fit-content">
+                        <li class="d-grid">
+                            <span class="lead fs-3" style="font-weight: 600">@monster.Name</span>
+                            <span><strong>LVL:</strong> @monster.Level</span>
+                        </li>
+                        <li class="d-flex gap-3">
+                            <div class="d-flex justify-content-center gap-2">
+                                <img src="images/icons/Monster/Health.svg" style="width: 40px;" />
+                                <span class="fs-4">&nbsp;@monster.CurrentHealth</span>
+                            </div>
+                            <div class="d-flex justify-content-center gap-2">
+                                <img src="images/icons/Monster/Damage.svg" style="width: 40px;" />
+                                <span class="fs-4">&nbsp;1 - @monster.Damage</span>
+                            </div>
+                            <div class="d-flex justify-content-center gap-2">
+                                <img src="images/icons/Monster/Award_Chest.svg" class="mx-auto" style="width: 40px;" />
+                                <span class="fs-4">&nbsp;@monster.ExperienceGivenToPlayer XP</span>
+                            </div>
+                        </li>
+                    </ul>
+                }
+            } else
+            {
+                <ul class="p-3 rounded-3 text-center bg-dark text-white list-unstyled d-grid gap-3 justify-content-center" style="box-shadow: 0px 2px 6px -2px black">
+                    <li>The land lies quiet. No foul beasts stir.</li>
+                    <li>But fear not, adventurer! Their return is nigh. Await the moment when darkness stirs again (@(Location.DefaultLocationRespawnTimer / 1000)s.).</li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Models.Location Location { get; set; }
+}

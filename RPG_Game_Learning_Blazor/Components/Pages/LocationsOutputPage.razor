@@ -1,0 +1,66 @@
+﻿@page "/locations"
+@inject Services.LocationService LocationService
+@inject Services.CharacterService CharacterService
+@using System.Timers
+
+<PageTitle>Locations</PageTitle>
+
+@if (CharacterService.Character.Name != "")
+{
+    <div>
+        <h1 class="text-center p-2">Locations</h1>
+
+        <div class="d-flex flex-wrap gap-4 justify-content-center mb-4">
+            @foreach (Location location in LocationService.Locations)
+            {
+                <RPG_Game_Learning_Blazor.Components.Location.DisplayLocationLink Location="@location" />
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p>Create a character.</p>
+}
+
+@code {
+    private Dictionary<string, Timer> timers = new Dictionary<string, Timer>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        foreach (Location location in LocationService.Locations)
+        {
+            if (location.RespawningMonsters)
+            {
+                CreateTimerForLocation(location);
+            }
+        }
+    }
+
+    private void CreateTimerForLocation(Location location)
+    {
+        var timer = new Timer(location.DefaultLocationRespawnTimer);
+        timer.Elapsed += (sender, e) => OnTimerElapsed(location.Name);
+        timer.AutoReset = false;
+        timer.Start();
+        timers.Add(location.Name, timer);
+    }
+
+    private void OnTimerElapsed(string locationName)
+    {
+        if (timers.TryGetValue(locationName, out var timer))
+        {
+            var location = LocationService.GetLocationByName(locationName);
+
+            if (location?.RespawningMonsters == true && location.CurrentMonsters.Count == 0)
+            {
+                LocationService.RespawnMonstersInLocation(location);
+                location.SetRespawningMonsters(false);
+                timer.Dispose();
+                timers.Remove(locationName);
+            }
+        }
+    }
+}

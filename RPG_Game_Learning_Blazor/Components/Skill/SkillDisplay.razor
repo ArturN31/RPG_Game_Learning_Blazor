@@ -1,0 +1,25 @@
+﻿<div class="d-grid gap-3 my-auto" style="height: fit-content">
+    @foreach (var skill in Skills)
+    {
+        <ul class="p-3 rounded-3 text-center bg-dark text-white list-unstyled m-auto col-12" style="box-shadow: 0px 2px 6px -2px black">
+            <li class="lead">@skill.Name</li>
+            <li>@skill.Description</li>
+            @if(skill.Name != "Melee Damage" && skill.Name != "Magic Damage")
+            {
+                <li><strong>Chance:</strong> @Math.Round(@skill.TriggerChance, 2)%</li>
+            }
+
+            <li class="pt-2">
+                <RPG_Game_Learning_Blazor.Components.ProgressBars.LevelStatusBar 
+                Level="@skill.Level"
+                CurrentExperience="@skill.CurrentExperience"
+                MaxExperience="@skill.MaxExperience" />
+            </li>
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<Skill> Skills { get; set; }
+}

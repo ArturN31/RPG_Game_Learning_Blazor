@@ -1,0 +1,17 @@
+﻿@inject NavigationManager NavigationManager
+
+<a 
+    href="@NavigationManager.ToAbsoluteUri($"/location/{Location.Name}")" 
+    class="thumbnail bg-dark d-grid gap-3 text-decoration-none text-white" style="width: fit-content">
+
+    <img class="img-fluid img-thumbnail m-auto" src="/images/locations/@Location.ImageName">
+
+    <h3 class="text-center m-auto">
+        <strong>@Location.Name</strong>
+    </h3>
+</a>
+
+@code {
+    [Parameter]
+    public Models.Location Location { get; set; }
+}

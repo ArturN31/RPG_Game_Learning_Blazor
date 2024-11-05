@@ -1,0 +1,13 @@
+﻿.thumbnail:hover {
+    opacity: 0.9;
+    color: white;
+    background-color: black
+}
+
+.thumbnail {
+    box-shadow: 0px 2px 6px -2px black;
+    width: fit-content;
+    padding: 20px 20px 20px 20px;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}

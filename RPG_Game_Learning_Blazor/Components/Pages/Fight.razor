@@ -1,0 +1,418 @@
+﻿@page "/fight/{LocationName}/{MonsterName}"
+@inject Services.LocationService LocationService
+@inject Services.CharacterService CharacterService
+@inject Services.SkillService SkillService
+@inject NavigationManager NavigationManager
+@using System.Text;
+@using System.Timers
+@implements IDisposable
+
+<PageTitle>Fight with @MonsterName</PageTitle>
+
+@if (CharacterService.Character.Name != "")
+{
+    @if (VisibleSkills)
+    {
+        //Display skills
+        <div class="d-grid gap-3 m-auto p-3" style="width: fit-content">
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <button type="button" class="btn btn-success" @onclick="@HandlePlayerSkillsVisibility">
+                    @(VisibleSkills ? "Hide Player Skills" : "Show Player Skills")
+                </button>
+            </div>
+
+            <RPG_Game_Learning_Blazor.Components.Skill.SkillDisplay Skills="@SkillService.Skills" />
+        </div>
+    }
+    else
+    {
+        <div class="d-grid gap-3 p-3">
+            <div class="d-grid gap-3">
+                @* Navigation *@
+                <div class="d-flex flex-wrap justify-content-center gap-2 text-center">
+                    @if (Monster?.CurrentHealth > 0 && CharacterService.Character.CurrentHealth > 0)
+                    {
+                        <a type="button"
+                           class="btn btn-secondary"
+                        href="location/@LocationName">Run Away</a>
+
+                        <button type="button" class="btn btn-success" @onclick="@HandlePlayerSkillsVisibility">
+                            @(VisibleSkills ? "Hide Player Skills" : "Show Player Skills")
+                        </button>
+
+                        <button type="button" class="btn btn-danger" @onclick="@HandleMeleeAttack">
+                            Melee Attack
+                        </button>
+
+                        <button type="button" class="btn btn-primary" @onclick="@HandleMagicAttack">
+                            Magic Attack (25 MP)
+                        </button>
+                    }
+
+                    @if (Monster?.CurrentHealth <= 0 || CharacterService.Character.CurrentHealth <= 0)
+                    {
+                        <p class="p-0 m-0 lead">@NavigationOutput</p>
+                    }
+                </div>
+            </div>
+
+            <div class="d-grid gap-3 m-lg-auto w-100">
+                @* Character & Monster *@
+                <div class="d-grid d-lg-flex gap-3 mx-auto">
+                    <RPG_Game_Learning_Blazor.Components.Character.CharacterFightDisplay Character="@CharacterService.Character" Skills="@SkillService.Skills"/>
+                    <RPG_Game_Learning_Blazor.Components.Monster.MonsterFightDisplay Monster="@Monster" />
+                </div>
+
+                @* Fight Details *@
+                <div class="rounded-3 bg-dark text-white text-center shadow" style="box-shadow: 0px 2px 6px -2px black">
+                    <h4 class="p-2 m-0 rounded border-bottom border-danger font-weight-bold text-danger">FIGHT DETAILS</h4>
+                    <div class="row">
+                        <div class="p-2 col border-end border-danger" id="fight-player-output">
+                            <h5>@CharacterService.Character.Name</h5>
+                            <p class="p-2">@PlayerOutput</p>
+                        </div>
+                        <div class="p-2 col" id="fight-monster-output">
+                            <h5>@MonsterName</h5>
+                            <p class="p-2">@MonsterOutput</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Create a Character.</p>
+}
+
+@code {
+    [Parameter]
+    public string? LocationName { get; set; }
+
+    [Parameter]
+    public string? MonsterName { get; set; }
+
+    private Location? Location { get; set; }
+    private Monster? Monster { get; set; }
+    private bool VisibleSkills { get; set; }
+    public MarkupString NavigationOutput { get; set; }
+    public MarkupString PlayerOutput { get; set; }
+    public MarkupString MonsterOutput { get; set; }
+    Models.Character? Character;
+    CancellationTokenSource cts = new CancellationTokenSource();
+
+    protected override void OnParametersSet()
+    {
+        if (LocationName != null) Location = LocationService.GetLocationByName(LocationName);
+
+        if (Location != null && MonsterName != null) Monster = GetMonster(Location, MonsterName);
+
+        Character = CharacterService.Character;
+    }
+
+    void IDisposable.Dispose() { cts.Cancel(); }
+
+    private Monster GetMonster(Location Location, string name)
+    {
+        Monster monster = Location.CurrentMonsters.Single(monster => monster.Name == name);
+        return new Monster(monster.Name, monster.Description, monster.Level, monster.MaxHealth, monster.CurrentHealth, monster.Damage, monster.AttackChance, monster.BlockChance, monster.CritChance, monster.ExperienceGivenToPlayer, monster.ImageName);
+    }
+
+    private void HandlePlayerSkillsVisibility()
+    {
+        VisibleSkills = !VisibleSkills;
+        StateHasChanged();
+    }
+
+    private void HandleMeleeAttack()
+    {
+        if (Monster != null)
+        {
+            StringBuilder playerOutputBuilder = new StringBuilder();
+            StringBuilder monsterOutputBuilder = new StringBuilder();
+
+            DealDamageToMonster(SkillService.Skills, Monster, "Melee Damage", playerOutputBuilder);
+
+            //if monster alive deal damage to player
+            if (Monster.CurrentHealth > 0)
+            {
+                DealDamageToPlayer(SkillService.Skills, Monster, playerOutputBuilder, monsterOutputBuilder);
+            }
+
+            PlayerOutput = new MarkupString(playerOutputBuilder.ToString());
+            MonsterOutput = new MarkupString(monsterOutputBuilder.ToString());
+            StateHasChanged();
+        }
+    }
+
+    private void HandleMagicAttack()
+    {
+        StringBuilder playerOutputBuilder = new StringBuilder();
+        StringBuilder monsterOutputBuilder = new StringBuilder();
+
+        if (Monster != null && Character?.CurrentMana >= 25)
+        {
+            //Deal magic damage
+
+            //remove mana
+            Character.SetCurrentMana(Character.CurrentMana - 25);
+
+            DealDamageToMonster(SkillService.Skills, Monster, "Magic Damage", playerOutputBuilder);
+
+            //if monster alive deal damage to player
+            if (Monster.CurrentHealth > 0)
+            {
+                DealDamageToPlayer(SkillService.Skills, Monster, playerOutputBuilder, monsterOutputBuilder);
+            }
+        }
+        else
+        {
+            //not enough MP
+            playerOutputBuilder.AppendLine($"<p><strong>MP:</strong> {Character?.CurrentMana}/{Character?.MaxMana}</p>");
+            playerOutputBuilder.AppendLine($"<p>The magic is fading from your veins.</p>");
+            playerOutputBuilder.AppendLine($"<p>Find a nearby campfire to rekindle your magical spark.</p>");
+        }
+
+        PlayerOutput = new MarkupString(playerOutputBuilder.ToString());
+        MonsterOutput = new MarkupString(monsterOutputBuilder.ToString());
+        StateHasChanged();
+    }
+
+    private void DealDamageToMonster(List<Skill> PlayerSkills, Monster Monster, string TypeOfAttack, StringBuilder playerOutputBuilder)
+    {
+        if (Character != null)
+        {
+            //getting player attack
+            //Item1 - Returns player damage
+            //Item2 - Is Critical Hit
+            (double, bool) playerDamage = Character.PlayerAttack(PlayerSkills, TypeOfAttack);
+
+            if (playerDamage.Item1 > 0)
+            {
+                //player attacks the monster
+                //check if monster blocked the attack
+                bool didMonsterBlock = Monster.DidBlock();
+
+                if (didMonsterBlock)
+                {
+                    //monster blocked attack
+                    playerOutputBuilder.AppendLine($"<p>{MonsterName} blocked {Character.Name}'s {TypeOfAttack} attack.</p>");
+                }
+                else
+                {
+                    //monster did not block the attack
+                    Monster.SetCurrentHealth(Monster.CurrentHealth - playerDamage.Item1);
+
+                    playerOutputBuilder.AppendLine($"<p>{Character.Name} has dealt {Math.Round(playerDamage.Item1, 2)} {TypeOfAttack} damage to {Monster.Name}{(playerDamage.Item2 ? " (Critical Attack)." : ".")}</p>");
+
+                    //award experience to relevant skills
+                    PlayerSkills.ForEach(Skill =>
+                    {
+                        if (TypeOfAttack == "Melee Damage" && Skill.Name == "Melee Attack")
+                        {
+                            double exp = playerDamage.Item1 * Skill.ScalingFactor;
+                            Skill.GiveExperience(Skill, exp, playerOutputBuilder);
+                        }
+
+                        if (TypeOfAttack == "Magic Damage" && Skill.Name == "Magic Attack")
+                        {
+                            double exp = playerDamage.Item1 * Skill.ScalingFactor;
+                            Skill.GiveExperience(Skill, exp, playerOutputBuilder);
+                        }
+
+                        if (Skill.Name == TypeOfAttack)
+                        {
+                            double exp = playerDamage.Item1 * Skill.ScalingFactor;
+                            Skill.GiveExperience(Skill, exp, playerOutputBuilder);
+                        }
+
+                        if (playerDamage.Item2 && Skill.Name == "Critical Hit")
+                        {
+                            double exp = playerDamage.Item1 * Skill.ScalingFactor;
+                            Skill.GiveExperience(Skill, exp, playerOutputBuilder);
+                        }
+                    });
+
+                    StateHasChanged();
+
+                    if (Monster.CurrentHealth <= 0 && Location != null)
+                    {
+                        Monster.SetCurrentHealth(0);
+                        MonsterKilled(Monster, Location, Character, playerOutputBuilder);
+                        PlayerOutput = new MarkupString(playerOutputBuilder.ToString());
+                        StateHasChanged();
+                    }
+                }
+            }
+            else
+            {
+                //player missed the attack
+                playerOutputBuilder.AppendLine($"<p>{Character.Name} has missed a {TypeOfAttack} attack!</p>");
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void DealDamageToPlayer(List<Skill> PlayerSkills, Monster Monster, StringBuilder playerOutputBuilder, StringBuilder monsterOutputBuilder)
+    {
+        //getting monster attack
+        //Item1 - Returns monster damage
+        //Item2 - Is Critical Hit
+        (double, bool) monsterDamage = Monster.MonsterAttack(Monster);
+
+        if (monsterDamage.Item1 > 0 && Character != null)
+        {
+            //monster attacks the player
+            //check if player blocked the attack
+            bool didPlayerBlock = Character.DidBlock(PlayerSkills);
+
+            if (didPlayerBlock)
+            {
+                //player blocked attack
+                //award experience to relevant skills
+                PlayerSkills.ForEach(Skill =>
+                {
+                    if (Skill.Name == "Block")
+                    {
+                        double exp = monsterDamage.Item1 * Skill.ScalingFactor;
+                        Skill.GiveExperience(Skill, exp, playerOutputBuilder);
+                    }
+                });
+
+                monsterOutputBuilder.AppendLine($"<p>{Character.Name} blocked {Monster.Name}'s attack.</p>");
+                StateHasChanged();
+            }
+            else
+            {
+                //player did not block the attack
+                Character.SetCurrentHealth(Character.CurrentHealth - monsterDamage.Item1);
+                monsterOutputBuilder.AppendLine($"<p>{Monster.Name} has dealt {Math.Round(monsterDamage.Item1, 2)} damage to {Character.Name}{(monsterDamage.Item2 ? " (Critical Attack)." : ".")}</p>");
+                StateHasChanged();
+
+                if (Character.CurrentHealth <= 0)
+                {
+                    Character.SetCurrentHealth(0);
+                    PlayerKilled(Character, playerOutputBuilder);
+                    PlayerOutput = new MarkupString(playerOutputBuilder.ToString());
+                    StateHasChanged();
+                }
+            }
+        }
+        else
+        {
+            //monster missed the attack
+            monsterOutputBuilder.AppendLine($"<p>{Monster.Name} has missed an attack!</p>");
+            StateHasChanged();
+        }
+    }
+
+    async void PlayerKilled(Models.Character Character, StringBuilder playerOutputBuilder)
+    {
+        StringBuilder navigationOutputBuilder = new StringBuilder();
+
+        navigationOutputBuilder.AppendLine($"<p>{Character.Name}!</p>");
+        navigationOutputBuilder.AppendLine($"<p>YOU DIED</p>");
+        navigationOutputBuilder.AppendLine($"<p>You must leave this world.</p>");
+
+        navigationOutputBuilder.AppendLine($"<p>Going back to the Homepage in 5s.</p>");
+        NavigationOutput = new MarkupString(navigationOutputBuilder.ToString());
+        StateHasChanged();
+
+        await NavigateToHomepage(cts.Token);
+    }
+
+    async void MonsterKilled(Monster Monster, Location Location, Models.Character Character, StringBuilder playerOutputBuilder)
+    {
+        Character.GiveExperience(Character, Monster, playerOutputBuilder);
+        PlayerOutput = new MarkupString(playerOutputBuilder.ToString());
+
+        //remove the monster from location
+        LocationService.RemoveMonsterFromLocation(Location.Name, Monster.Name);
+        StateHasChanged();
+
+        StringBuilder navigationOutputBuilder = new StringBuilder();
+
+        //check if any monsters remain
+        if (Location.CurrentMonsters.Count > 0)
+        {
+            //monsters alive
+            //continue exploring location - navigate to /location/{LocationName}
+            navigationOutputBuilder.AppendLine($"<p>Going back to the {Location.Name} in 5s.</p>");
+            NavigationOutput = new MarkupString(navigationOutputBuilder.ToString());
+            StateHasChanged();
+            await NavigateToLocation(Location, cts.Token);
+        }
+        else
+        {
+            //all monsters defeated
+            //set respawn monsters flag
+            LocationService.Locations?.FirstOrDefault(loc => loc.Name == Location.Name)?.SetRespawningMonsters(true);
+
+            //navigate to /locations
+            navigationOutputBuilder.AppendLine($"<p>Going back to the Locations in 5s.</p>");
+            NavigationOutput = new MarkupString(navigationOutputBuilder.ToString());
+            StateHasChanged();
+            await NavigateToLocations(cts.Token);
+        }
+    }
+
+    private void ClearGameData()
+    {
+        CharacterService.RemoveCharacter();
+        LocationService.RemoveAllLocations();
+        SkillService.RemoveAllSkills();
+    }
+
+    async Task NavigateToHomepage(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested) return;
+
+        try
+        {
+            await Task.Delay(5000, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        ClearGameData();
+        NavigationManager.NavigateTo("");
+    }
+
+    async Task NavigateToLocations(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested) return;
+
+        try
+        {
+            await Task.Delay(5000, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+       
+        NavigationManager.NavigateTo("locations");
+    }
+
+    async Task NavigateToLocation(Location Location, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(5000, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        NavigationManager.NavigateTo($"location/{Location.Name}");
+    }
+}

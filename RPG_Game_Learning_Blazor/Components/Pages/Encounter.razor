@@ -1,0 +1,46 @@
+﻿@page "/encounter/{LocationName}/{MonsterName}"
+
+@inject Services.LocationService LocationService
+@inject Services.CharacterService CharacterService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Encountered @MonsterName</PageTitle>
+
+@if (CharacterService.Character.Name != "")
+{
+    <div class="d-grid gap-3 p-3">
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a type="button" class="btn btn-secondary" style="width: fit-content" href="location/@LocationName">Run Away</a>
+            <a type="button" class="btn btn-danger" style="width: fit-content" href="fight/@LocationName/@MonsterName">Start Fight</a>
+        </div>
+
+        <RPG_Game_Learning_Blazor.Components.Monster.DisplayMonsterDetails Monster="@Monster" />
+    </div>
+}
+else
+{
+    <p>Create a Character.</p>
+}
+
+@code {
+    [Parameter]
+    public string LocationName { get; set; }
+
+    [Parameter]
+    public string MonsterName { get; set; }
+
+    public static Location Location { get; set; }
+    private Monster Monster { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Location = LocationService.GetLocationByName(LocationName);
+        Monster = GetMonster(Location, MonsterName);
+    }
+
+    Monster GetMonster(Location Location, string name)
+    {
+        List<Monster> Monsters = Location.CurrentMonsters;
+        return Monsters.FirstOrDefault(Monster => Monster.Name == name);
+    }
+}

@@ -1,0 +1,196 @@
+﻿@page "/character"
+@inject Services.CharacterService CharacterService
+@inject Services.SkillService SkillService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Character</PageTitle>
+
+@if (!string.IsNullOrEmpty(CharacterService.Character.Name))
+{
+    //Character exists
+    @if (DisplayNameInput)
+    {
+        //Change name clicked - display input
+        <div class="vh-100 d-flex flex-column justify-content-center text-center m-auto" style="width: 400px">
+            <div class="d-grid gap-5">
+                <button type="button" class="btn btn-secondary btn-lg m-auto" style="width: fit-content"
+                        @onclick="HandleDisplayNameInput">
+                    Go Back
+                </button>
+
+                <div class="d-grid gap-3">
+                    <h3>Change Character Name</h3>
+                    <div class="d-grid gap-2">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">Name</span>
+                            <input type="text" class="form-control" @bind="NameInput">
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg" style="box-shadow: 0px 2px 6px -2px black"
+                                @onclick="ChangePlayerName">
+                            Change
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        //Display character details
+        <div class="d-grid d-xxl-flex gap-3 p-3 justify-content-center h-100">
+            <div class="my-auto d-grid gap-3">
+                <button type="button" class="btn btn-secondary btn-lg w-100" @onclick="HandleDisplayNameInput">
+                    Change Name
+                </button>
+
+                <RPG_Game_Learning_Blazor.Components.Character.CharacterDisplay Character="@CharacterService.Character" />
+            </div>
+
+            <RPG_Game_Learning_Blazor.Components.Skill.SkillDisplay Skills="SkillService.Skills" />
+        </div>
+    }
+}
+else
+{
+    //Character does not exist
+    <div class="vh-100 d-flex flex-column justify-content-center text-center m-auto gap-3" style="width: 400px">
+        <h3>Create New Character</h3>
+
+        <div class="d-grid gap-3">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text">Name</span>
+                <input type="text" class="form-control" @bind="NameInput">
+            </div>
+            <button type="button" class="btn btn-primary btn-lg" style="box-shadow: 0px 2px 6px -2px black"
+                @onclick="CreatePlayer">
+                Create
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    private string? NameInput { get; set; }
+    private bool DisplayNameInput { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        // Ensure the default values are displayed immediately
+        StateHasChanged();
+    }
+
+    private void HandleDisplayNameInput()
+    {
+        if (DisplayNameInput) DisplayNameInput = false; else DisplayNameInput = true;
+
+        NameInput = "";
+    }
+
+    private void ChangePlayerName()
+    {
+        if (NameInput != null)
+        {
+            CharacterService.Character.SetName(NameInput);
+            HandleDisplayNameInput();
+        }
+    }
+
+    private void CreatePlayer()
+    {
+        if (string.IsNullOrEmpty(NameInput)) { return; }
+        CharacterService.CreateCharacter(
+            name: NameInput, 
+            level: 1, 
+            currentExperience: 0, 
+            maxExperience: 1000, 
+            baseHealth: 200,
+            maxHealth: 200,
+            currentHealth: 200, 
+            baseMana: 200,
+            maxMana: 200, 
+            currentMana: 200);
+        GenerateSkills();
+
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+    }
+
+    private void AddSkill(
+        string name, 
+        string description, 
+        int level, 
+        double currentExperience, 
+        double maxExperience, 
+        double triggerChance, 
+        double maxTriggerChance,
+        double scalingFactor)
+    {
+        Skill newSkill = new(
+            name, 
+            description, 
+            level,  
+            currentExperience, 
+            maxExperience, 
+            triggerChance,
+            maxTriggerChance,
+            scalingFactor);
+        SkillService.AddSkill(newSkill);
+    }
+
+    private void GenerateSkills()
+    {
+        AddSkill(name: "Melee Damage", 
+        description: "Determines how hard you can hit with melee attacks.", 
+        level: 10,
+        currentExperience: 0, 
+        maxExperience: 200, 
+        triggerChance: 100, 
+        maxTriggerChance: 100,
+        scalingFactor: 0.2);
+
+        AddSkill(name: "Melee Attack",
+        description: "Improves your chance of hitting a target with melee attacks.",
+        level: 1,
+        currentExperience: 0,
+        maxExperience: 200,
+        triggerChance: 60,
+        maxTriggerChance: 85,
+        scalingFactor: 0.15);
+
+        AddSkill(name: "Magic Damage", 
+        description: "Determines how hard you can hit with magic attacks.", 
+        level: 10, 
+        currentExperience: 0, 
+        maxExperience: 200, 
+        triggerChance: 100, 
+        maxTriggerChance: 100,
+        scalingFactor: 0.2);
+
+        AddSkill(name: "Magic Attack",
+        description: "Improves your chance of hitting a target with magic attacks.",
+        level: 1,
+        currentExperience: 0,
+        maxExperience: 200,
+        triggerChance: 75,
+        maxTriggerChance: 95,
+        scalingFactor: 0.15);
+
+        AddSkill(name: "Block", 
+        description: "Increases chance to block enemy attacks.", 
+        level: 1, 
+        currentExperience: 0, 
+        maxExperience: 200, 
+        triggerChance: 25, 
+        maxTriggerChance: 50,
+        scalingFactor: 0.25);
+
+        AddSkill(name: "Critical Hit", 
+        description: "Increases chance to deal additional damage.", 
+        level: 1, 
+        currentExperience: 0, 
+        maxExperience: 200, 
+        triggerChance: 5, 
+        maxTriggerChance: 20,
+        scalingFactor: 0.5);
+    }
+}

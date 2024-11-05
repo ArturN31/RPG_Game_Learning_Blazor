@@ -1,0 +1,31 @@
+﻿<div class="d-grid gap-3">
+    <div id="location-image-container"
+         class="d-grid p-3 thumbnail bg-dark text-white rounded-3 m-auto"
+         style="width: fit-content; box-shadow: 0px 2px 6px -2px black">
+        <img class="img-fluid img-thumbnail" src="/images/Character.jpg">
+    </div>
+
+    @* Character Details *@
+    <div class="bg-dark text-white p-3 rounded-3" style="box-shadow: 0px 2px 6px -2px black">
+        <RPG_Game_Learning_Blazor.Components.Character.CharacterStatusBars 
+        Name="@Character.Name"
+        Level="@Character.Level"
+        CurrentExperience="@Character.CurrentExperience"
+        MaxExperience="@Character.MaxExperience"
+        CurrentHealth="@Character.CurrentHealth"
+        MaxHealth="@Character.MaxHealth"
+        CurrentMana="@Character.CurrentMana"
+        MaxMana="@Character.MaxMana" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Models.Character Character { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        StateHasChanged();
+    }
+}

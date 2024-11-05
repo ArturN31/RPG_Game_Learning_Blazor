@@ -1,0 +1,96 @@
+﻿<div class="d-grid d-lg-flex bg-dark p-3 text-white gap-3 rounded-3"
+     style="box-shadow: 0px 2px 6px -2px black; width: fit-content">
+
+    <img class="rounded-3 d-none d-xxl-grid m-auto img-thumbnail"
+         style="max-width: 200px"
+         src="/images/Character.jpg">
+
+    <div class="d-flex flex-column gap-3 m-auto">
+        <div class="mx-auto" style="width: 300px">
+            @* Character Details *@
+            <RPG_Game_Learning_Blazor.Components.Character.CharacterStatusBars 
+            Name="@Character.Name"
+            Level="@Character.Level"
+            CurrentExperience="@Character.CurrentExperience"
+            MaxExperience="@Character.MaxExperience"
+            CurrentHealth="@Character.CurrentHealth"
+            MaxHealth="@Character.MaxHealth"
+            CurrentMana="@Character.CurrentMana"
+            MaxMana="@Character.MaxMana" />
+        </div>
+
+        <ul class="list-unstyled p-3 rounded-3 text-center d-grid gap-3">
+            <li class="d-flex justify-content-center gap-2">
+                @* Melee Damage *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Melee_Damage.svg" style="width: 40px" />
+                    <span class="fs-4">@(Math.Round(MeleeDamage / 4)) - @MeleeDamage</span>
+                </div>
+
+                @* Melee Attack Chance *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Hit_Chance.svg" style="width: 40px" />
+                    <span class="fs-4">@(Math.Round(MeleeAttackChance, 2))%</span>
+                </div>
+            </li>
+
+            <li class="d-flex justify-content-center gap-2">
+                @* Magic Damage *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Magic_Damage.svg" style="width: 35px" />
+                    <span class="fs-4">@(Math.Round(MagicDamage / 2)) - @MagicDamage</span>
+                </div>
+
+                @* Magic Attack Chance *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Hit_Chance.svg" style="width: 40px" />
+                    <span class="fs-4">@(Math.Round(MagicAttackChance, 2))%</span>
+                </div>
+            </li>
+            
+            <li class="d-flex justify-content-center gap-3">
+                @* Block *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Block.svg" style="width: 40px" />
+                    <span class="fs-4">@Math.Round(@BlockChance, 2)%</span>
+                </div>
+
+                @* Crit *@
+                <div class="d-flex justify-content-center gap-2">
+                    <img src="images/icons/Character/Critical_Hit.svg" style="width: 40px" />
+                    <span class="fs-4">@Math.Round(@CritChance, 2)%</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Character? Character { get; set; }
+
+    [Parameter]
+    public List<Skill>? Skills { get; set; }
+
+    Skill? Melee, Magic, MeleeAttack, MagicAttack, Block, Crit;
+
+    double MeleeDamage, MagicDamage;
+    double MeleeAttackChance, MagicAttackChance, BlockChance, CritChance;
+
+    protected override void OnParametersSet()
+    {
+        Melee = Skills?.FirstOrDefault(Skill => Skill.Name == "Melee Damage");
+        Magic = Skills?.FirstOrDefault(Skill => Skill.Name == "Magic Damage");
+        MeleeAttack = Skills?.FirstOrDefault(Skill => Skill.Name == "Melee Attack");
+        MagicAttack = Skills?.FirstOrDefault(Skill => Skill.Name == "Magic Attack");
+        Block = Skills?.FirstOrDefault(Skill => Skill.Name == "Block");
+        Crit = Skills?.FirstOrDefault(Skill => Skill.Name == "Critical Hit");
+
+        if (Melee != null) MeleeDamage = Melee.Level;
+        if (Magic != null) MagicDamage = Magic.Level * 2;
+        if (MeleeAttack != null) MeleeAttackChance = MeleeAttack.TriggerChance;
+        if (MagicAttack != null) MagicAttackChance = MagicAttack.TriggerChance;
+        if (Block != null) BlockChance = Block.TriggerChance;
+        if (Crit != null) CritChance = Crit.TriggerChance;
+    }
+}

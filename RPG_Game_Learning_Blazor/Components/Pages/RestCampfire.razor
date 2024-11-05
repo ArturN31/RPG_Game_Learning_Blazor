@@ -1,0 +1,176 @@
+﻿@page "/rest"
+@inject Services.CharacterService CharacterService
+@implements IDisposable
+
+<PageTitle>Rest - Campfire</PageTitle>
+
+@if (!string.IsNullOrEmpty(CharacterService.Character.Name))
+{
+    <div class="d-grid gap-3 p-3">
+        <div class="d-grid d-xxl-flex gap-3 m-auto">
+            @* Location image and title *@
+            <div id="location-image-container"
+                 class="d-grid gap-3 p-3 thumbnail bg-dark text-white rounded-3 m-auto">
+                <img class="img-fluid img-thumbnail"
+                     src="/images/HeartOfForest.jpg">
+
+                <h3 class="text-center m-auto">
+                    <strong>@title</strong>
+                </h3>
+            </div>
+
+            <div class="d-flex flex-column gap-3 mx-auto">
+                @* Location description *@
+                <div class="container">
+                    <div class="row">
+                        <p class="text-center bg-dark rounded-3 m-auto text-white p-3">
+                            @description
+                        </p>
+                    </div>
+                </div>
+
+                @* Nav btns *@
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    @if (restoringHealth || restoringMana || CharacterService.Character.CurrentHealth == CharacterService.Character.MaxHealth)
+                    {
+                        <button class="btn btn-danger"
+                                style="width: fit-content; box-shadow: 0px 2px 6px -2px black"
+                                disabled>
+                            Bask in the Campfire's Warmth
+                        </button>
+                    } else
+                    {
+                        <button class="btn btn-danger"
+                                style="width: fit-content; box-shadow: 0px 2px 6px -2px black"
+                                @onclick="@(() => RestoreHealth(cts.Token))">
+                            Bask in the Campfire's Warmth
+                        </button>
+                    }
+
+                    @if (restoringMana || restoringHealth || CharacterService.Character.CurrentMana == CharacterService.Character.MaxMana)
+                    {
+                        <button class="btn btn-primary"
+                                style="width: fit-content; box-shadow: 0px 2px 6px -2px black" 
+                                disabled>
+                            Channel the Ancient Power
+                        </button>
+                    } else
+                    {
+                        <button class="btn btn-primary"
+                                style="width: fit-content; box-shadow: 0px 2px 6px -2px black" 
+                                @onclick="@(() => RestoreMana(cts.Token))" >
+                            Channel the Ancient Power
+                        </button>
+                    }
+                </div>
+
+                @* Character Details *@
+                <div class="bg-dark text-white p-3 rounded-3 mx-auto" 
+                style="box-shadow: 0px 2px 6px -2px black; width: 473px">
+                    <RPG_Game_Learning_Blazor.Components.Character.CharacterStatusBars 
+                    Name="@CharacterService.Character.Name"
+                    Level="@CharacterService.Character.Level"
+                    CurrentExperience="@CharacterService.Character.CurrentExperience"
+                    MaxExperience="@CharacterService.Character.MaxExperience"
+                    CurrentHealth="@CharacterService.Character.CurrentHealth"
+                    MaxHealth="@CharacterService.Character.MaxHealth"
+                    CurrentMana="@CharacterService.Character.CurrentMana"
+                    MaxMana="@CharacterService.Character.MaxMana" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>Create a character.</p>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        // Ensure the default values are displayed immediately
+        StateHasChanged();
+    }
+
+    void IDisposable.Dispose()
+    {
+        cts.Cancel();
+    }
+
+    string title = "Heart of the Forest";
+    string description = "Nestled deep within a sun-dappled forest, this secluded clearing serves as a sanctuary for weary travelers and adventurers. A stone circle surrounds a crackling campfire, casting a warm glow against the ancient trees. A moss-covered cross stands sentinel nearby, offering a sense of peace and tranquility. The air is filled with the soothing sounds of nature - birdsong, rustling leaves, and the gentle lapping of a hidden stream";
+    Boolean restoringHealth = false;
+    Boolean restoringMana = false;
+
+    CancellationTokenSource cts = new CancellationTokenSource();
+
+    async Task RestoreHealth(CancellationToken cancellationToken)
+    {
+        Models.Character character = CharacterService.Character;
+        double remainingHealth = character.MaxHealth - character.CurrentHealth;
+        double restorePercentage = 0.05;
+        restoringHealth = true;
+
+        if (remainingHealth > 0)
+        {
+            while (character.CurrentHealth < character.MaxHealth)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                double restoreAmount = character.MaxHealth * restorePercentage;
+
+                if (remainingHealth < restoreAmount)
+                {
+                    character.CurrentHealth = character.MaxHealth;
+                }
+                else
+                {
+                    character.CurrentHealth += restoreAmount;
+                    remainingHealth -= restoreAmount;
+                }
+
+                StateHasChanged();
+
+                var timespan = TimeSpan.FromSeconds(1);
+
+                await Task.Delay(timespan, cancellationToken);
+            }
+        }
+        restoringHealth = false;
+    }
+
+    async Task RestoreMana(CancellationToken cancellationToken)
+    {
+        Models.Character character = CharacterService.Character;
+        double remainingMana = character.MaxMana - character.CurrentMana;
+        double restorePercentage = 0.05;
+        restoringMana = true;
+
+        if (remainingMana > 0)
+        {
+            while (character.CurrentMana < character.MaxMana)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                double restoreAmount = character.MaxHealth * restorePercentage;
+
+                if (remainingMana < restoreAmount)
+                {
+                    character.CurrentMana = character.MaxMana;
+                }
+                else
+                {
+                    character.CurrentMana += restoreAmount;
+                    remainingMana -= restoreAmount;
+                }
+
+                StateHasChanged();
+
+                var timespan = TimeSpan.FromSeconds(1);
+
+                await Task.Delay(timespan, cancellationToken);
+            }
+        }
+        restoringMana = false;
+    }
+}
